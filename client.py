@@ -5,7 +5,6 @@ import time
 
 #from test_keys import rsa_decrypt
 from decrypt import rsa_decrypt
-
 # Set address and port
 serverAddress = "localhost"
 serverPort = 10000
@@ -54,7 +53,7 @@ while True:
     
             #encryption 
             #data=rsa_codec.decrypt_by_private_key(data)
-
+            data=rsa_decrypt(data)
             seqNo = data.split(delimiter)[1]
             clientHash = hashlib.sha1(data.split(delimiter)[3].encode("utf-8")).hexdigest()
             print("Server hash: " + data.split(delimiter)[0])
