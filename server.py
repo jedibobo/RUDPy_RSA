@@ -4,8 +4,10 @@ import hashlib
 import time
 import datetime
 import random
-from RSAutils import RsaUtil
-rsa_codec=RsaUtil()
+# from RSAutils import RsaUtil
+# rsa_codec=RsaUtil()
+# from test_keys import rsa_encrypt
+from encrypt import rsa_encrypt
 
 # PLP Simulation settings
 lossSimualation = False
@@ -73,11 +75,11 @@ def handleConnection(address, data):
         # Fragment and send file 500 byte by 500 byte
         x = 0
         resend_count=0
-        while x < (len(data) // 500) + 1:
+        while x < (len(data) // 50) + 1:
             packet_count += 1
             randomised_plp = random.random()
             if packet_loss_percentage < randomised_plp:
-                msg = data[x * 500:x * 500 + 500]
+                msg = data[x * 50:x * 50 + 50]
                 #print('msg',msg)
                 pkt.make(msg)
 
@@ -88,8 +90,11 @@ def handleConnection(address, data):
 
                 #encryption
                 #finalPacket=rsa_codec.encrypt_by_public_key(finalPacket)
+                print(finalPacket,"len:",len(finalPacket))
+                encryption=rsa_encrypt(finalPacket)
+                print("encryption",encryption)
 
-                sent = threadSock.sendto(bytes(finalPacket,encoding='utf-8'), address)
+                sent = threadSock.sendto(bytes(encryption,encoding='utf-8'), address)
                 print('Sent %s bytes back to %s, awaiting acknowledgment..' % (sent, address))
                 threadSock.settimeout(2)
                 try:

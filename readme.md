@@ -1,3 +1,3 @@
-openssl genrsa -out rsa_private_key.pem 1024
+# generate pkcs8 format public key using private key
 
-openssl rsa -in rsa_private_key.pem -pubout -out rsa_public_key.pem
+openssl rsa -in private.pem -pubout -out public_pkcs8.pem

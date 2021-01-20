@@ -1,8 +1,10 @@
 import socket
 import hashlib
 import os
-from RSAutils import RsaUtil
-rsa_codec=RsaUtil()
+import time
+
+#from test_keys import rsa_decrypt
+from decrypt import rsa_decrypt
 
 # Set address and port
 serverAddress = "localhost"
@@ -12,11 +14,13 @@ serverPort = 10000
 delimiter = "&|~|&~"
 
 # Start - Connection initiation
+fsize = 0
 while True:
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     sock.settimeout(10)
     server_address = (serverAddress, serverPort)
     userInput = input("\nRequested file: ")
+    fsize = os.path.getsize(userInput)
     message = userInput
     seqNoFlag = 0
     f = open("r_" + userInput, 'w')
@@ -29,6 +33,7 @@ while True:
         
         sent = sock.sendto(bytes(message,encoding='utf-8'), server_address)
         # Receive indefinitely
+        start=time.time()
         while True:
             # Receive response
             print('\nWaiting to receive..')
@@ -46,7 +51,7 @@ while True:
                     os.remove("r_" + userInput)
                     break
             data=bytes.decode(data,encoding='utf-8')
-
+    
             #encryption 
             #data=rsa_codec.decrypt_by_private_key(data)
 
@@ -68,11 +73,13 @@ while True:
                 print("Checksum mismatch detected, dropping packet")
                 print("Server: %s on port %s" % server)
                 continue
-            if int(packetLength) < 500:
+            if int(packetLength) < 50:
                 seqNo = int(not seqNo)
                 break
 
     finally:
+        end=time.time()
+        print("speed:{}KB/s".format(fsize/1000/(end-start)))
         print("Closing socket")
         sock.close()
         f.close()

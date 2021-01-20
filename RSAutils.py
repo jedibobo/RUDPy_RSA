@@ -4,7 +4,7 @@ from rsa import common
 
 # 使用 rsa库进行RSA签名和加解密
 class RsaUtil(object):
-    PUBLIC_KEY_PATH = 'rsa_public_key_pkcs8.pem'  # 公钥
+    PUBLIC_KEY_PATH = 'rsa_public_key.pem'  # 公钥
     PRIVATE_KEY_PATH = 'rsa_private_key.pem'  # 私钥
 
     # 初始化key
