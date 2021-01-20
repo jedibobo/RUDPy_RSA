@@ -7,7 +7,7 @@ import random
 # from RSAutils import RsaUtil
 # rsa_codec=RsaUtil()
 # from test_keys import rsa_encrypt
-from encrypt import rsa_encrypt
+from encrypt import rsa_encrypt,rsa_verify
 
 # PLP Simulation settings
 lossSimualation = False
@@ -19,7 +19,7 @@ serverPort = 10000
 
 # Delimiter
 delimiter = "&|~|&~"
-
+b_delimiter = b"&|~|&~"
 # Seq number flag
 seqFlag = 0
 
@@ -75,7 +75,9 @@ def handleConnection(address, data):
         # Fragment and send file 500 byte by 500 byte
         x = 0
         resend_count=0
+        
         while x < (len(data) // 50) + 1:
+            verify_flag=''
             packet_count += 1
             randomised_plp = random.random()
             if packet_loss_percentage < randomised_plp:
@@ -90,15 +92,17 @@ def handleConnection(address, data):
 
                 #encryption
                 #finalPacket=rsa_codec.encrypt_by_public_key(finalPacket)
-                print(finalPacket,"len:",len(finalPacket))
+                #print(finalPacket,"len:",len(finalPacket))
                 encryption=rsa_encrypt(finalPacket)
-                print("encryption",encryption)
+                #print("encryption",encryption)
 
                 sent = threadSock.sendto(bytes(encryption,encoding='utf-8'), address)
                 print('Sent %s bytes back to %s, awaiting acknowledgment..' % (sent, address))
                 threadSock.settimeout(2)
                 try:
-                    ack, address = threadSock.recvfrom(100)
+                    ack, address = threadSock.recvfrom(1000)
+                    verify_flag=rsa_verify(ack.split(b_delimiter)[0],ack.split(b_delimiter)[2])
+        
                     ack=bytes.decode(ack,encoding='utf-8')
                 except:
                     print("Time out reached, resending ...%s" % x)
@@ -109,10 +113,9 @@ def handleConnection(address, data):
                         sys.exit(1)
                     else:
                         continue
-                if ack.split(",")[0] == str(pkt.seqNo):
+                if ack.split(delimiter)[0] == str(pkt.seqNo) and verify_flag=='SHA-1':
                     pkt.seqNo = int(not pkt.seqNo)
-                    print("Acknowledged by: " + ack + "\nAcknowledged at: " + str(
-                        datetime.datetime.utcnow()) + "\nElapsed: " + str(time.time() - start_time))
+                    print("Acknowledged at: " + str(datetime.datetime.utcnow()) + "\nElapsed: " + str(time.time() - start_time))
                     x += 1
             else:
                 print("\n------------------------------\n\t\tDropped packet\n------------------------------\n")

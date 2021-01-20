@@ -1,10 +1,15 @@
+from base64 import encodestring
 import socket
 import hashlib
 import os
 import time
 
+from rsa.pkcs1 import encrypt
+
 #from test_keys import rsa_decrypt
-from decrypt import rsa_decrypt
+from encrypt import rsa_encrypt
+from decrypt import rsa_decrypt, rsa_sign
+
 # Set address and port
 serverAddress = "localhost"
 serverPort = 10000
@@ -67,7 +72,12 @@ while True:
                     f.write(data.split(delimiter)[3])
                 print("Sequence number: %s\nLength: %s" % (seqNo, packetLength))
                 print("Server: %s on port %s" % server)
-                sent = sock.sendto(bytes(str(seqNo) + "," + packetLength,encoding='utf-8'), server)
+                
+                #sign using private key
+                
+                sign=rsa_sign(bytes(seqNo,encoding='utf-8'))
+
+                sent = sock.sendto(bytes(str(seqNo) + delimiter + packetLength+delimiter+sign,encoding='utf-8'), server)
             else:
                 print("Checksum mismatch detected, dropping packet")
                 print("Server: %s on port %s" % server)
